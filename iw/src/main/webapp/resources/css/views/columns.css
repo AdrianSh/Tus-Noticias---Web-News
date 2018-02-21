@@ -1,0 +1,32 @@
+.resumen-top {
+	margin-bottom: 2vh;
+}
+
+
+.nav-categorias {
+	border: 1px solid #E7E7E7;
+	border-radius: 3px;
+	margin-bottom: 15px;
+	text-align: center;
+}
+
+.nav-cat-header {
+	padding-right: 15px;
+	padding-left: 15px;
+	margin-right: auto;
+	margin-left: auto;
+	display: table;
+	content: " ";
+	width: 100%;
+}
+
+.nav-cat-header .navbar-header .lead {
+	margin-top: 14px;
+	margin-bottom: 0px;
+}
+
+#categorias {
+	margin-top: 10px;
+	padding-right: 0px;
+}
+

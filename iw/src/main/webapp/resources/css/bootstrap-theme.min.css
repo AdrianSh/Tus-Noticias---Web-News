@@ -1,0 +1,84 @@
+/* CSS de la pagina de registro */
+@import url(views/registro.css);
+/* CSS de botones de toda la pagina en general */
+@import url(views/botones.css);
+/* CSS del header incluyendo navs del header */
+@import url(views/header.css);
+/* CSS del body siendo articulos, secciones generales */
+@import url(views/body.css);
+/* CSS para listas */
+@import url(views/lists.css);
+/* CSS para las columnas laterales */
+@import url(views/columns.css);
+/* CSS de la paginacion */
+@import url(views/pagination.css);
+/* CSS de la pagina de perfil */
+@import url(views/profile.css);
+/* CSS de los comentarios de articulos */
+@import url(views/comentarios.css);
+/* CSS del footer */
+@import url(views/footer.css);
+
+
+
+
+/*
+Temporal para el selector de paragraph
+*/
+.deleteSeleccion {
+	font-weight: bolder;
+    font-size: 10px;
+    border: 1px solid red;
+    border-radius: 57px;
+    background-color: #F3A3A3;
+    font-family: monospace;
+    padding-left: 1px;
+    padding-right: 3px;
+    margin-left: 10px;
+    cursor: pointer;
+}
+
+
+/*
+.unav {
+	margin-top: 1vh;
+	height: 90%;
+	/* overflow: auto; 
+	list-style: none;
+	float: right;
+}
+
+.unav li {
+	margin-top: 3vh;
+	margin-left: 0.5vw;
+	float: left;
+	display: flex;
+}
+
+.unav>li>a:hover {
+	color: gray !important;
+}
+
+.unav>li>a:focus {
+	color: gray !important;
+}
+
+.unav-none {
+	display: none;
+}
+
+.articulo {
+	
+}
+*/
+
+
+
+
+
+
+
+
+
+
+

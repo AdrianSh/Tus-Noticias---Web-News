@@ -1,0 +1,13 @@
+<%@ page contentType="text/html; charset=UTF-8"%>
+<aside class="col-md-3">
+	<p class="lead">Ranking</p>
+	<div class="list-group">
+		<section class="resumen-top">Resumen de un articulo wbdq
+			bednwobd ad raeracerv c aewr c er fcrxarf cdaxwe rv ac f vac er vdca
+			fe vfca wer fvwac fxwa era wc fesf afdwdq3wfaef.</section>
+
+		<section class="resumen-top">Resumen de un articulo wbdq
+			bednwobd ad raeracerv c aewr c er fcrxarf cdaxwe rv ac f vac er vdca
+			fe vfca wer fvwac fxwa era wc fesf afdwdq3wfaef.</section>
+	</div>
+</aside>

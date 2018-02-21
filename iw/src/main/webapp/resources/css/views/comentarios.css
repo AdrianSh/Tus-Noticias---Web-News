@@ -1,0 +1,41 @@
+.commentarios {
+	border-top: 1px solid #DDDDDD;
+	padding-top: 1vh;
+}
+
+.commentarios .row {
+	
+}
+
+.commentarios .row .left {
+	float: left;
+}
+
+.commentarios .row .right {
+	float: right;
+}
+
+.commentarios .row .thumbnail {
+	max-width: 20vh;
+}
+
+@media ( min-width : 768px) {
+	.commentarios .row .thumbnail {
+		max-width: 20vh;
+	}
+}
+
+textarea.panel-body {
+	width: 100%;
+	border: 0px;
+	border-bottom: 1px solid #DDDDDD;
+}
+
+.comment-form {
+	
+}
+
+.comment-form .btn-default {
+	margin: 1vh;
+	margin-left: 39vh;
+}

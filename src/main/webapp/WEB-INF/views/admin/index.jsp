@@ -6,7 +6,7 @@
         <div id="page-wrapper">
             <div class="row">
                 <div class="col-lg-12">
-                    <h1 class="page-header">Dashboard</h1>
+                    <h1 class="page-header">Inicio</h1>
                 </div>
                 <!-- /.col-lg-12 -->
             </div>
@@ -545,7 +545,10 @@
             <!-- /.row -->
         </div>
         <!-- /#page-wrapper -->
-
+				<p>Lista de todas las actividades de todos</p>
+						<c:forEach items="${actividades}" var="a">
+							<p>${e:forHtmlContent(a.estado)} ${e:forHtmlContent(a.updatedAt)}</p>
+						</c:forEach>
 
 </div>
 <%@ include file="../../fragments/admin/sfooter.jspf"%>

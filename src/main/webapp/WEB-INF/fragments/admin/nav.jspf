@@ -23,45 +23,29 @@
 				<i class="fa fa-caret-down"></i>
 		</a>
 			<ul class="dropdown-menu dropdown-messages">
-				<li><a href="#">
-						<div>
-							<strong>John Smith</strong> <span class="pull-right text-muted">
-								<em>Yesterday</em>
-							</span>
-						</div>
-						<div>Lorem ipsum dolor sit amet, consectetur adipiscing
-							elit. Pellentesque eleifend...</div>
-				</a></li>
+				<c:forEach items="${mensajes}" var="a">
+					<li><a href="#">
+							<div>
+								<strong>${e:forHtmlContent(mensajes.user.name)} ${e:forHtmlContent(mensajes.user.lname)}</strong> <span class="pull-right text-muted">
+									<em>${e:forHtmlContent(mensajes.createdAt)}</em>
+								</span>
+							</div>
+							<div>${e:forHtmlContent(mensajes.mensaje)}</div>
+					</a></li>
+					<li class="divider"></li>
+				</c:forEach>
 				<li class="divider"></li>
-				<li><a href="#">
-						<div>
-							<strong>John Smith</strong> <span class="pull-right text-muted">
-								<em>Yesterday</em>
-							</span>
-						</div>
-						<div>Lorem ipsum dolor sit amet, consectetur adipiscing
-							elit. Pellentesque eleifend...</div>
-				</a></li>
-				<li class="divider"></li>
-				<li><a href="#">
-						<div>
-							<strong>John Smith</strong> <span class="pull-right text-muted">
-								<em>Yesterday</em>
-							</span>
-						</div>
-						<div>Lorem ipsum dolor sit amet, consectetur adipiscing
-							elit. Pellentesque eleifend...</div>
-				</a></li>
-				<li class="divider"></li>
-				<li><a class="text-center" href="#"> <strong>Read
+				<!--   <li><a class="text-center" href="#"> <strong>Read
 							All Messages</strong> <i class="fa fa-angle-right"></i>
-				</a></li>
+				</a></li> -->
 			</ul> <!-- /.dropdown-messages --></li>
 		<!-- /.dropdown -->
+		<!--  Inactivo ya que no se ha pensado por ahora en programar listas de tareas a los administradores
 		<li class="dropdown"><a class="dropdown-toggle"
 			data-toggle="dropdown" href="#"> <i class="fa fa-tasks fa-fw"></i>
 				<i class="fa fa-caret-down"></i>
 		</a>
+		
 			<ul class="dropdown-menu dropdown-tasks">
 				<li><a href="#">
 						<div>
@@ -130,19 +114,23 @@
 				<li><a class="text-center" href="#"> <strong>See
 							All Tasks</strong> <i class="fa fa-angle-right"></i>
 				</a></li>
-			</ul> <!-- /.dropdown-tasks --></li>
+			</ul> <!-- /.dropdown-tasks --> <!-- </li> 
 		<!-- /.dropdown -->
 		<li class="dropdown"><a class="dropdown-toggle"
 			data-toggle="dropdown" href="#"> <i class="fa fa-bell fa-fw"></i>
 				<i class="fa fa-caret-down"></i>
 		</a>
 			<ul class="dropdown-menu dropdown-alerts">
-				<li><a href="#">
+				<c:forEach items="${actividades}" var="a">
+					<li><a href="#">
 						<div>
-							<i class="fa fa-comment fa-fw"></i> New Comment <span
-								class="pull-right text-muted small">4 minutes ago</span>
+							<i class="fa fa-comment fa-fw"></i>${e:forHtmlContent(a.user.name)} ${e:forHtmlContent(a.user.lname)}<span
+								class="pull-right text-muted small">${e:forHtmlContent(a.estado)}</span>
 						</div>
-				</a></li>
+					</a>
+					</li>
+				</c:forEach>
+				<!--  Dado que no hemos especificado tipos de actividades, esto lo anulamos por ahora
 				<li class="divider"></li>
 				<li><a href="#">
 						<div>
@@ -175,6 +163,7 @@
 				<li><a class="text-center" href="#"> <strong>See
 							All Alerts</strong> <i class="fa fa-angle-right"></i>
 				</a></li>
+				 -->
 			</ul> <!-- /.dropdown-alerts --></li>
 		<!-- /.dropdown -->
 		<li class="dropdown"><a class="dropdown-toggle"
@@ -204,21 +193,23 @@
 						</span>
 					</div> <!-- /input-group -->
 				</li>
-				<li><a href="${prefix}admin"><i class="fa fa-dashboard fa-fw"></i>
-						Inicio</a></li>
-				<li><a href="#"><i class="fa fa-bar-chart-o fa-fw"></i>
+				<li><a href="${prefix}admin"><i
+						class="fa fa-dashboard fa-fw"></i> Inicio</a></li>
+				<!-- Se Anula porque no estamos informados de los plugins <li><a href="#"><i class="fa fa-bar-chart-o fa-fw"></i>
 						Estadisticas<span class="fa arrow"></span></a>
 					<ul class="nav nav-second-level">
 						<li><a href="${prefix}admin/flot">Flot Charts</a></li>
 						<li><a href="${prefix}admin/morris">Morris.js Charts</a></li>
-					</ul> <!-- /.nav-second-level --></li>
-				<li><a href="${prefix}admin/tables"><i class="fa fa-table fa-fw"></i>
-						Tablas</a></li>
-				<li><a href="${prefix}admin/forms"><i class="fa fa-edit fa-fw"></i>
-						Formularios</a></li>
-				<li><a href="#"><i class="fa fa-wrench fa-fw"></i>Elementos UI<span class="fa arrow"></span></a>
+					</ul> <!-- /.nav-second-level --><!-- </li> -->
+				<li><a href="${prefix}admin/tables"><i
+						class="fa fa-table fa-fw"></i> Tablas</a></li>
+				<li><a href="${prefix}admin/forms"><i
+						class="fa fa-edit fa-fw"></i> Publicar Articulos</a></li>
+				<li><a href="#"><i class="fa fa-wrench fa-fw"></i>Elementos
+						UI<span class="fa arrow"></span></a>
 					<ul class="nav nav-second-level">
-						<li><a href="${prefix}admin/panels-wells">Paneles y estructura</a></li>
+						<li><a href="${prefix}admin/panels-wells">Paneles y
+								estructura</a></li>
 						<li><a href="${prefix}admin/buttons">Botones</a></li>
 						<li><a href="${prefix}admin/notifications">Notificaciones</a></li>
 						<li><a href="${prefix}admin/typography">Tipografia</a></li>
@@ -242,7 +233,8 @@
 						Pages<span class="fa arrow"></span></a>
 					<ul class="nav nav-second-level">
 						<li><a href="${prefix}admin/blank">Blank Page</a></li>
-						<li><a href="${prefix}admin/loginSettings">Ajustes de login</a></li>
+						<li><a href="${prefix}admin/loginSettings">Ajustes de
+								login</a></li>
 					</ul> <!-- /.nav-second-level --></li>
 			</ul>
 		</div>

@@ -38,6 +38,14 @@
 						<input type="email" name="email" id="email"
 							class="form-control input-lg label_better" placeholder="Email" tabindex="4">
 					</div>
+					<div class="form-group">
+						<input type="text" name="pregunta" id="pregunta"
+							class="form-control input-lg label_better" placeholder="Pregunta de seguridad" tabindex="5">
+					</div>
+					<div class="form-group">
+						<input type="text" name="respuesta" id="respuesta"
+							class="form-control input-lg label_better" placeholder="Respuesta de seguridad" tabindex="6">
+					</div>
 					<div class="row">
 						<div class="col-xs-12 col-sm-6 col-md-6">
 							<div class="form-group">
@@ -55,18 +63,10 @@
 						</div>
 					</div>
 					<div class="row">
-						<div class="col-xs-4 col-sm-3 col-md-3">
-							<span class="button-checkbox">
-								<button type="button" class="btn" data-color="info" tabindex="7">Acepto</button>
-								<input type="checkbox" name="t_and_c" id="t_and_c"
-								class="hidden" value="1">
-							</span>
-						</div>
 						<div class="col-xs-8 col-sm-9 col-md-9">
 							Al presionar <strong class="label label-primary">Registrarme</strong>,
 							tu aceptas los <a href="#" data-toggle="modal"
-								data-target="#t_and_c_m">Terminos y condiciones</a> del sitio,
-							incluyendo nuestro uso de Cookies.
+								data-target="#t_and_c_m">Terminos y condiciones</a> del sitio, incluyendo nuestro uso de Cookies.
 						</div>
 					</div>
 

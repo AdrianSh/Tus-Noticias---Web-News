@@ -28,7 +28,18 @@
 <!-- jQuery Label_better -->
 <script type="text/javascript"
 	src="${prefix}resources/js/jquery-label_better/jquery.label_better.min.js"></script>
+
+<!-- WysiBB BBcode editor -->
+	<script type="text/javascript" src="${prefix}resources/js/wysibb/jquery.wysibb.min.js"></script>
+
 <!-- jQuery TusNoticias -->
 <script type="text/javascript" src="${prefix}resources/js/tusnoticias.js"></script>
-</body>
-</html>
+
+<script type="text/javascript">
+$(".category").click(function() {
+	var tag = $(this).text();
+	$("section.col-md-7").load("${prefix}" + "articulos/tag/" + tag);
+	$("a.list-group-item.category.active").toggleClass("active");
+	$(this).toggleClass("active");
+});
+</script>

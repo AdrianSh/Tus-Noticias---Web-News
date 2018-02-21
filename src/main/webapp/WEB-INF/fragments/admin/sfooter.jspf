@@ -14,3 +14,10 @@
 
     <!-- Custom Theme JavaScript -->
     <script src="${prefix}resources/admin/dist/js/sb-admin-2.js"></script>
+	
+	<!-- WysiBB BBcode editor -->
+	<script type="text/javascript" src="${prefix}resources/js/wysibb/jquery.wysibb.min.js"></script>
+
+
+	<!-- jQuery TusNoticias -->
+	<script type="text/javascript" src="${prefix}resources/js/tusnoticias.js"></script>

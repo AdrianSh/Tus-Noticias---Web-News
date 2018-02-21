@@ -2,20 +2,22 @@
 <!-- Page Content -->
 <section class="container">
 	<div class="row">
-		<%@ include file="../fragments/perfil/column-left.jspf"%>
+		<%@ include file="../fragments/userperfil/column-left.jspf"%>
 		<div class="col-md-6">
 			<div class="card hovercard">
 				<div class="card-background">
 					<img class="card-bkimg" alt=""
-						src="${e:forUri(user.profileBackground)}">
+						src="${e:forUri(userp.profileBackground)}">
 					<!-- http://lorempixel.com/850/280/people/9/ -->
 				</div>
 				<div class="useravatar">
 					<img alt="" src="${prefix}user/${user.id}/photo">
 				</div>
 				<div class="card-info">
-					<span class="card-title">${e:forHtmlContent(user.name)} ${e:forHtmlContent(user.lname)}</span>
-
+					<span class="card-title">${e:forHtmlContent(userp.name)} ${e:forHtmlContent(userp.lname)}</span>
+					<c:if test="${amistad}">
+						<a href="${prefix}perfil/${e:forHtmlContent(userp.id)}/add">Añadir como Amigo</a>
+					</c:if>
 				</div>
 			</div>
 			<div class="btn-pref btn-group btn-group-justified btn-group-lg"
@@ -38,7 +40,7 @@
 					<button type="button" id="following" class="btn btn-default"
 						href="#tab3" data-toggle="tab">
 						<span class="glyphicon glyphicon-user" aria-hidden="true"></span>
-						<div class="hidden-xs">Tu actividad</div>
+						<div class="hidden-xs">Su actividad</div>
 					</button>
 				</div>
 			</div>
@@ -53,7 +55,7 @@
 					</div>
 					<div class="tab-pane fade in" id="tab3">
 						<c:forEach items="${actividad}" var="a">
-							<p>${a.estado} ${a.updatedAt}</p>
+							<p>${e:forHtmlContent(a.estado)} ${e:forHtmlContent(a.updatedAt)}</p>
 						</c:forEach>
 					</div>
 				</div>
@@ -62,7 +64,7 @@
 		</div>
 
 
-		<%@ include file="../fragments/perfil/column-right.jspf"%>
+		<%@ include file="../fragments/userperfil/column-right.jspf"%>
 	</div>
 </section>
 <!-- /.container -->

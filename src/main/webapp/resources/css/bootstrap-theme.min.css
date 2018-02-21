@@ -19,66 +19,7 @@
 /* CSS del footer */
 @import url(views/footer.css);
 
-
-
-
 /*
-Temporal para el selector de paragraph
+Fonts
 */
-.deleteSeleccion {
-	font-weight: bolder;
-    font-size: 10px;
-    border: 1px solid red;
-    border-radius: 57px;
-    background-color: #F3A3A3;
-    font-family: monospace;
-    padding-left: 1px;
-    padding-right: 3px;
-    margin-left: 10px;
-    cursor: pointer;
-}
-
-
-/*
-.unav {
-	margin-top: 1vh;
-	height: 90%;
-	/* overflow: auto; 
-	list-style: none;
-	float: right;
-}
-
-.unav li {
-	margin-top: 3vh;
-	margin-left: 0.5vw;
-	float: left;
-	display: flex;
-}
-
-.unav>li>a:hover {
-	color: gray !important;
-}
-
-.unav>li>a:focus {
-	color: gray !important;
-}
-
-.unav-none {
-	display: none;
-}
-
-.articulo {
-	
-}
-*/
-
-
-
-
-
-
-
-
-
-
-
+@import url(../fonts/roboto_regular_macroman/stylesheet.css);

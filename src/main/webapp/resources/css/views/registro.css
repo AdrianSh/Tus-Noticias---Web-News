@@ -11,3 +11,15 @@ div.lb_label {
 	min-width: 15vw;
 	text-shadow: 1px 1px 0px white;
 }
+
+.col-md-9 {
+    width: 100%;
+}
+
+.btn-primar{
+	color: #FFF !important;
+	background-color: #E00000 !important;
+	border-color: #B30101 !important;
+	width: 40% !important;
+	margin: center !important; 
+}

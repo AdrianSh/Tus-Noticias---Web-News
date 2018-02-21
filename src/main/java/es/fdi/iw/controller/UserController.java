@@ -7,21 +7,27 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigInteger;
+import java.security.SecureRandom;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.apache.commons.io.IOUtils;
+import org.owasp.encoder.Encode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -36,7 +42,11 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 //import scala.annotation.meta.setter;
 import es.fdi.iw.ContextInitializer;
 import es.fdi.iw.model.Actividad;
+import es.fdi.iw.model.Amigos;
+import es.fdi.iw.model.ComentarioPerfil;
 import es.fdi.iw.model.User;
+import es.fdi.iw.model.Amigos;
+import es.fdi.iw.model.ComentarioPerfil;
 
 @Controller
 public class UserController {
@@ -46,74 +56,131 @@ public class UserController {
 	private EntityManager entityManager;
 
 	@RequestMapping(value = "/registro", method = RequestMethod.GET)
-	public String registro(Locale locale, Model model) {
+	public String registro(Locale locale, Model model, HttpSession session) {
+		String returnn = "registro";
+		if (ping(session))
+			returnn = "redirect:home";
 		model.addAllAttributes(HomeController.basic(locale));
 		model.addAttribute("pageTitle", "Registro");
-		return "registro";
+		model.addAttribute("categorias",
+				entityManager.createNamedQuery("allTagsOrderByDate").setMaxResults(10000).getResultList());
+		model.addAttribute("rightArticulos",
+				entityManager.createNamedQuery("allArticulosOrderByRanking").setMaxResults(10).getResultList());
+
+		return returnn;
 	}
 
 	@RequestMapping(value = "/usuario/crear", method = RequestMethod.GET)
 	public String registro2(Locale locale, Model model) {
 		model.addAllAttributes(HomeController.basic(locale));
 		model.addAttribute("pageTitle", "Registro");
+		model.addAttribute("categorias",
+				entityManager.createNamedQuery("allTagsOrderByDate").setMaxResults(10000).getResultList());
+		model.addAttribute("rightArticulos",
+				entityManager.createNamedQuery("allArticulosOrderByRanking").setMaxResults(10).getResultList());
 		model.addAttribute("prefix", "./../");
 		return "registro";
+	}
+
+	
+
+	@RequestMapping(value = "/ajustes", method = RequestMethod.POST)
+	@Transactional
+	public String handleFileAjustes(@RequestParam("avatar") MultipartFile avatar, @RequestParam("email") String email,
+			@RequestParam("pass") String pass, HttpSession session, Model model) {
+		User u = (User) session.getAttribute("user");
+		String returnn = "redirect:/perfil";
+		long id = u.getId();
+		String st = Long.toString(id);
+		BCryptPasswordEncoder bcryptEncoder = new BCryptPasswordEncoder();
+		if (!avatar.isEmpty()) {
+			try {
+
+				byte[] bytes = avatar.getBytes();
+				BufferedOutputStream stream = new BufferedOutputStream(
+						new FileOutputStream(ContextInitializer.getFile("user", st)));
+				stream.write(bytes);
+				stream.close();
+				u.setAvatar("user/" + u.getId() + "/photo");
+				model.addAttribute("avatar",
+						Encode.forUriComponent(ContextInitializer.getFile("user", st).getAbsolutePath()));
+				// ContextInitializer.getFile("user", id).getAbsolutePath();
+
+			} catch (Exception e) {
+				return "You failed to upload " + id + " => " + e.getMessage();
+			}
+		}
+
+		if (!email.isEmpty()) {
+			u.setEmail(email);
+			model.addAttribute("email", Encode.forHtmlContent(email));
+		}
+
+		if (!pass.isEmpty()) {
+			// entityManager.getTransaction().begin();
+			// u.setHashedAndSalted(bcryptEncoder.encode(pass));
+			// entityManager.getTransaction().commit();
+			u.cambiarUserPass(pass);
+			model.addAttribute("HashedAndSalted", bcryptEncoder.encode(pass));
+		}
+
+		session.setAttribute("user", u);
+		model.addAttribute("user", u);
+		entityManager.merge(u);
+		// entityManager.persist(u);
+
+		return returnn;
 	}
 
 	/**
 	 * Crear un usuario
 	 */
-	@RequestMapping(value = "/usuario/crear", params = { "login", "pass", "nombre", "apellido", "email",
-			"passConf" }, method = RequestMethod.POST)
+	@RequestMapping(value = "/usuario/crear", params = { "login", "pass", "nombre", "apellido", "email", "passConf",
+			"pregunta", "respuesta" }, method = RequestMethod.POST)
 	@Transactional
 	public String crearUsuario(@RequestParam("login") String login, @RequestParam("passConf") String passConf,
 			@RequestParam("pass") String pass, @RequestParam("nombre") String nombre,
-			@RequestParam("apellido") String apellido, @RequestParam("email") String email, Model model,
+			@RequestParam("apellido") String apellido, @RequestParam("email") String email,
+			@RequestParam("pregunta") String pregunta, Model model, @RequestParam("respuesta") String respuesta,
 			HttpServletRequest request, HttpServletResponse response, HttpSession session, Locale locale) {
 		String returnn = "redirect:/";
-		
+
 		model.addAllAttributes(HomeController.basic(locale));
 		model.addAttribute("pageTitle", "Registro");
-
-		if (!pass.equals(passConf)) {
-			logger.info("Contraseñas fallidas: {}, {}", pass, passConf);
-			model.addAttribute("error", "Las contraseñas no coinciden, verifique todos los datos.");
+		model.addAttribute("categorias",
+				entityManager.createNamedQuery("allTagsOrderByDate").setMaxResults(10000).getResultList());
+		model.addAttribute("rightArticulos",
+				entityManager.createNamedQuery("allArticulosOrderByRanking").setMaxResults(10).getResultList());
+		try {
+			User u1 = (User) entityManager.createNamedQuery("userByLogin")
+					.setParameter("loginParam", Encode.forHtmlContent(login)).getSingleResult();
+			model.addAttribute("error", "Ese nombre de usuario ya existe");
 			returnn = "registro";
-			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-		}
-		if (login == null || login.length() < 4 || pass == null || pass.length() < 4 || nombre == null
-				|| apellido == null || email == null) {
-			model.addAttribute("error",
-					"Verifique todos los campos y recuerde que el usuario y la contraseña deben tener al menos 4 caracteres.");
-			returnn = "registro";
-			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-		} else {
-			User user = User.createUser(login, pass, "user", nombre, apellido, email);
-			entityManager.persist(user);
+		} catch (NoResultException e) {
+			if (!pass.equals(passConf)) {
+				logger.info("Contraseñas fallidas: {}, {}", pass, passConf);
+				model.addAttribute("error", "Las contraseñas no coinciden, verifique todos los datos.");
+				returnn = "registro";
+				response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+			}
+			if (login == null || login.length() < 4 || pass == null || pass.length() < 4 || nombre == null
+					|| apellido == null || email == null) {
+				model.addAttribute("error",
+						"Verifique todos los campos y recuerde que el usuario y la contraseña deben tener al menos 4 caracteres.");
+				returnn = "registro";
+				response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+			} else {
+				User user = User.createUser(login, pass, "user", nombre, apellido, email, pregunta, respuesta);
+				entityManager.persist(user);
 
-			logger.info("User logged {}", user.getLogin());
-			session.setAttribute("user", user);
-			// sets the anti-csrf token
-			getTokenForSession(session);
+				logger.info("User logged {}", user.getLogin());
+				session.setAttribute("user", user);
+				// sets the anti-csrf token
+				getTokenForSession(session);
 
+			}
 		}
 		return returnn;
-	}
-
-	/**
-	 * Crear un admin
-	 * ------>>>>>  ESTE METODO ES TEMPORAL <<<<<---- HAY QUE BORRARLO AL FINALIZAR YA QUE ES INSEGURO
-	 */
-	@RequestMapping(value = "/usuario/crearAdmin", params = { "login", "pass", "nombre", "apellido",
-			"email" }, method = RequestMethod.POST)
-	@Transactional
-	public String crearAdmin(@RequestParam("login") String login, @RequestParam("pass") String pass,
-			@RequestParam("nombre") String nombre, @RequestParam("apellido") String apellido,
-			@RequestParam("email") String email, Model model) {
-		User user = User.createUser(login, pass, "admin", nombre, apellido, email);
-		entityManager.persist(user);
-
-		return "redirect:/";
 	}
 
 	/**
@@ -124,23 +191,21 @@ public class UserController {
 	@RequestMapping(value = "/login", method = RequestMethod.POST)
 	@Transactional
 	public String login(@RequestParam("login") String formLogin, @RequestParam("pass") String formPass,
-			@RequestParam("source") String formSource, HttpServletRequest request, HttpServletResponse response,
-			RedirectAttributes model, HttpSession session) {
+			HttpServletRequest request, HttpServletResponse response, RedirectAttributes model, HttpSession session,
+			Locale locale) {
 
-		logger.info("Login attempt from '{}' while visiting '{}'", formLogin, formSource);
-
-		// validate request
 		if (formLogin == null || formLogin.length() < 4 || formPass == null || formPass.length() < 4) {
 			model.addAttribute("loginError", "usuarios y contraseñas: 4 caracteres mínimo");
 			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 		} else {
 			User u = null;
 			try {
-				u = (User) entityManager.createNamedQuery("userByLogin").setParameter("loginParam", formLogin)
-						.getSingleResult();
+				u = (User) entityManager.createNamedQuery("userByLogin")
+						.setParameter("loginParam", Encode.forHtmlContent(formLogin)).getSingleResult();
 				if (u.isPassValid(formPass)) {
 					logger.info("pass was valid");
 					Actividad atv = Actividad.createActividad("Se ha conectado!", u, new Date());
+
 					u.getActividad().add(atv);
 					session.setAttribute("user", u);
 					// sets the anti-csrf token
@@ -151,52 +216,168 @@ public class UserController {
 					response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 				}
 			} catch (NoResultException nre) {
-				// if (formPass.length() == 4) {
-				// UGLY: register new users if they do not exist and pass is 4
-				// chars long
-				// logger.info("no-such-user; creating user {}", formLogin);
-				// User user = User.createUser(formLogin, formPass, "user");
-				// entityManager.persist(user);
-				// session.setAttribute("user", user);
-				// sets the anti-csrf token
-				// getTokenForSession(session);
-				// } else {
 				logger.info("no such login: {}", formLogin);
-				// }
 				session.setAttribute("loginError", "error en usuario o contraseña");
 			}
 		}
-
-		// redirects to view from which login was requested
-		/*
-		 * CONSIDER TO UNUSE formSource or try to find another solution... like filtering formSource in a valid list of 
-		 * valid sources
-		 */
-		return "redirect:" + formSource;
+		return "redirect:home";
 	}
-	
+
+	@RequestMapping(value = "/adminlogin", method = RequestMethod.POST)
+	@Transactional
+	public String adminlogin(@RequestParam("login") String formLogin, @RequestParam("pass") String formPass,
+			HttpServletRequest request, HttpServletResponse response, RedirectAttributes model, HttpSession session,
+			Locale locale) {
+		login(formLogin, formPass, request, response, model, session, locale);
+		return "redirect:admin";
+	}
+
 	@RequestMapping(value = "/perfil", method = RequestMethod.GET)
+	@Transactional
 	public String perfil(Locale locale, Model model, HttpSession session) {
 		model.addAllAttributes(HomeController.basic(locale));
 		model.addAttribute("pageTitle", "Perfil");
+		model.addAttribute("categorias",
+				entityManager.createNamedQuery("allTagsOrderByDate").setMaxResults(10000).getResultList());
+		model.addAttribute("rightArticulos",
+				entityManager.createNamedQuery("allArticulosOrderByRanking").setMaxResults(10).getResultList());
 		String returnn = "perfil";
-		if(!ping(session)){
+		if (!ping(session)) {
 			returnn = "redirect:home";
 		} else {
 			User u = (User) session.getAttribute("user");
-			model.addAttribute("amigos", entityManager.createNamedQuery("allAmigos").setParameter("userParam", u).getResultList());
-			//model.addAttribute("actividad", entityManager.createNamedQuery("allActividadByUser").setParameter("userParam", u).getResultList()); // Devuelve TODA la actividad del usuario 
-			model.addAttribute("actividad", u.getActividad()); // Devuelve la actividad de la session actual
+			model.addAttribute("amigos",
+					entityManager.createNamedQuery("allAmigos").setParameter("userParam", u).getResultList());
+			model.addAttribute("comentariosPerfil", entityManager.createNamedQuery("allComentarioPerfilByUser")
+					.setParameter("userParam", u).getResultList());
+
+			model.addAttribute("actividad", u.getActividad());
 		}
+
 		return returnn;
 	}
 
-	
-	@RequestMapping(value = {"/user/{id}", "/perfil/{id}"}, method = RequestMethod.GET)
-	public String user(@PathVariable("id") long id, HttpServletResponse response, Model model, Locale locale, HttpSession session) {
-		String returnn = "perfil";
+	@ResponseBody
+	@RequestMapping(value = "/user/{id}/photo", method = RequestMethod.GET, produces = MediaType.IMAGE_JPEG_VALUE)
+	public byte[] userPhoto(@PathVariable("id") long id) throws IOException {
+		try {
+			String st = Long.toString(id);
+			File f = ContextInitializer.getFile("user", st);
+			InputStream in = null;
+			if (f.exists()) {
+				in = new BufferedInputStream(new FileInputStream(f));
+			} else {
+				in = new BufferedInputStream(this.getClass().getClassLoader().getResourceAsStream("unknown-user.jpg"));
+			}
+
+			return IOUtils.toByteArray(in);
+		} catch (IOException e) {
+			logger.warn("Error cargando " + id, e);
+			throw e;
+		}
+	}
+
+	@RequestMapping(value = "/ajustes", method = RequestMethod.GET)
+	@Transactional
+	public String ajustes(Locale locale, Model model, HttpSession session) {
+		model.addAllAttributes(HomeController.basic(locale));
+		model.addAttribute("pageTitle", "Ajustes");
+		model.addAttribute("categorias",
+				entityManager.createNamedQuery("allTagsOrderByDate").setMaxResults(10000).getResultList());
+		model.addAttribute("rightArticulos",
+				entityManager.createNamedQuery("allArticulosOrderByRanking").setMaxResults(10).getResultList());
+		String returnn = "ajustes";
+		if (!ping(session)) {
+			returnn = "redirect:home";
+		} else {
+			User u = (User) session.getAttribute("user");
+			model.addAttribute("email", Encode.forHtmlContent(u.getEmail()));
+		}
+
+		return returnn;
+	}
+
+	@RequestMapping(value = { "/user/{id}/add", "/perfil/{id}/add" }, method = RequestMethod.GET)
+	@Transactional
+	public String adduserasfriend(@PathVariable("id") long id, HttpServletResponse response, Model model, Locale locale,
+			HttpSession session) {
+		User us = entityManager.find(User.class, id);
+		if (!ping(session)) {
+		} else {
+			User u = (User) session.getAttribute("user");
+			u = (User) entityManager.find(User.class, u.getId());
+
+			if (u != null) {
+				Actividad atv = Actividad.createActividad(
+						"Ha agregado como amigo a " + us.getName() + " " + us.getLname(), u, new Date());
+				u.getActividad().add(atv);
+
+				if (u.getAmigos().contains(us)) {
+				} else {
+					Amigos ami = Amigos.createAmistad(u, us);
+					u.getAmigos().add(ami);
+				}
+
+				session.setAttribute("user", u);
+			}
+		}
+		return "redirect:/user/" + us.getId();
+	}
+
+	@RequestMapping(value = { "/user/{id}/addComment", "/perfil/{id}/addComment" }, method = RequestMethod.POST)
+
+	@Transactional
+
+	public String userPerfilAddComment(@RequestParam("comment") String comentario, @PathVariable("id") long id,
+			HttpServletResponse response, Model model, Locale locale,
+
+			HttpSession session) {
+
+		User us = entityManager.find(User.class, id);
+
+		if (!ping(session)) {
+
+		} else {
+
+			User u = (User) session.getAttribute("user");
+
+			u = (User) entityManager.find(User.class, u.getId());
+
+			if (u != null) {
+
+				Actividad atv = Actividad.createActividad(
+
+						"Ha comentado el perfil de " + Encode.forHtmlContent(us.getName()) + " "
+								+ Encode.forHtmlContent(us.getLname()),
+						u, new Date());
+
+				u.getActividad().add(atv);
+
+				ComentarioPerfil comp = ComentarioPerfil.createComment(comentario, u, us, new Date());
+
+				u.getComentariosPerfil().add(comp);
+
+				session.setAttribute("user", u);
+
+			}
+
+		}
+
+		return "redirect:/user/" + us.getId();
+
+	}
+
+	@RequestMapping(value = { "/user/{id}", "/perfil/{id}" }, method = RequestMethod.GET)
+	@Transactional
+	public String userPerfil(@PathVariable("id") long id, HttpServletResponse response, Model model, Locale locale,
+			HttpSession session) {
+		String returnn = "userperfil";
 		model.addAllAttributes(HomeController.basic(locale));
 		model.addAttribute("pageTitle", "Perfil");
+		model.addAttribute("categorias",
+				entityManager.createNamedQuery("allTagsOrderByDate").setMaxResults(10000).getResultList());
+		model.addAttribute("rightArticulos",
+				entityManager.createNamedQuery("allArticulosOrderByRanking").setMaxResults(10).getResultList());
 		model.addAttribute("prefix", "./../");
 		User us = entityManager.find(User.class, id);
 		if (us == null) {
@@ -204,13 +385,39 @@ public class UserController {
 			logger.error("No such user: {}", id);
 			returnn = "redirect:/";
 		} else {
-			model.addAttribute("user", us);
-			
-			User u = (User) session.getAttribute("user");
-			if (u != null) {
-				Actividad atv = Actividad.createActividad("Ha visitado el perfil de " + us.getName() + " " + us.getLname(), u, new Date());
-				u.getActividad().add(atv);
+			model.addAttribute("userp", us);
+			model.addAttribute("amigos", us.getAmigos());
+
+			if (!ping(session)) {
+				returnn = "redirect:/";
+			} else {
+				User u = (User) session.getAttribute("user");
+				u = (User) entityManager.find(User.class, u.getId());
+
+				if (u != null) {
+					Actividad atv = Actividad.createActividad("Ha visitado el perfil de "
+							+ Encode.forHtmlContent(us.getName()) + " " + Encode.forHtmlContent(us.getLname()), u,
+							new Date());
+					u.getActividad().add(atv);
+					session.setAttribute("user", u);
+
+					if (Amigos.comprobarAmigo(u.getAmigos(), us)) {
+						// Son amigos
+						// logger.info("Son amigos:" + u.getEmail() + " de " +
+						// us.getEmail());
+						model.addAttribute("amistad", false);
+					} else {
+						// logger.info("No son amigos:" + u.getEmail() + " de "
+						// + us.getEmail());
+						// logger.info(u.getAmigos().toString());
+						model.addAttribute("amistad", true);
+					}
+				} else {
+					logger.error("Usuario no encontrado, verifique si esta loggeado.");
+				}
+				model.addAttribute("user", u);
 			}
+
 		}
 		return returnn;
 	}
@@ -219,12 +426,13 @@ public class UserController {
 	 * Logout (also returns to home view).
 	 */
 	@RequestMapping(value = "/logout", method = RequestMethod.GET)
+	@Transactional
 	public String logout(HttpSession session) {
 		User u = (User) session.getAttribute("user");
 		if (u != null) {
 			Actividad natv = Actividad.createActividad("Se ha desconectado", u, new Date());
 			u.getActividad().add(natv);
-		
+
 			logger.info("User '{}' logged out", u.getEmail());
 			session.invalidate();
 		}
@@ -241,6 +449,7 @@ public class UserController {
 	 * @return
 	 */
 	@RequestMapping(value = "/user", method = RequestMethod.POST)
+	@Transactional
 	public @ResponseBody String handleFileUpload(@RequestParam("photo") MultipartFile photo,
 			@RequestParam("id") String id) {
 		if (!photo.isEmpty()) {
@@ -260,46 +469,69 @@ public class UserController {
 		}
 	}
 
-	// /**
-	// * Displays user details
-	// */
-	// @RequestMapping(value = "/user", method = RequestMethod.GET)
-	// public String user(HttpSession session, HttpServletRequest request) {
-	// return "user";
-	// }
-
 	/**
-	 * Returns a users' photo
-	 * 
-	 * @param id
-	 *            id of user to get photo from
-	 * @return
+	 * Olvidar contraseña.
 	 */
-	@ResponseBody
-	@RequestMapping(value = "/user/photo", method = RequestMethod.GET, produces = MediaType.IMAGE_JPEG_VALUE)
-	public byte[] userPhoto(@RequestParam("id") String id) throws IOException {
-		File f = ContextInitializer.getFile("user", id); // Cambiar "user" e id
-															// para pedir otros
-															// archivos
-		InputStream in = null;
-		if (f.exists()) {
-			in = new BufferedInputStream(new FileInputStream(f));
-		} else {
-			in = new BufferedInputStream(this.getClass().getClassLoader().getResourceAsStream("unknown-user.jpg"));
-		}
 
-		return IOUtils.toByteArray(in);
+	@RequestMapping(value = { "/olvidopass", "/mail/nuevo/", "/forgot", "/olvide" }, method = RequestMethod.GET)
+	@Transactional
+	public String olvidoPassWebb(Locale locale, Model model, HttpSession session) {
+
+		model.addAllAttributes(HomeController.basic(locale));
+		model.addAttribute("pageTitle", "Recuperar contraseña");
+		model.addAttribute("categorias",
+				entityManager.createNamedQuery("allTagsOrderByDate").setMaxResults(10000).getResultList());
+		model.addAttribute("rightArticulos",
+				entityManager.createNamedQuery("allArticulosOrderByRanking").setMaxResults(10).getResultList());
+
+		return "user/olvidopass";
 	}
 
-	/**
-	 * userPhoto Toggles debug mode
-	 */
-	@RequestMapping(value = "/debug", method = RequestMethod.GET)
-	public String debug(HttpSession session, HttpServletRequest request) {
-		String formDebug = request.getParameter("debug");
-		logger.info("Setting debug to {}", formDebug);
-		session.setAttribute("debug", "true".equals(formDebug) ? "true" : "false");
-		return "redirect:/";
+	@RequestMapping(value = "/recuperarpass", method = RequestMethod.POST)
+	@Transactional
+	public String regenerarpass(@RequestParam("email") String email, @RequestParam("alias") String alias,
+			@RequestParam("respuesta") String respuesta, Locale locale, Model model, HttpSession session) {
+		String returnn = "user/enviarpass";
+		model.addAllAttributes(HomeController.basic(locale));
+		model.addAttribute("pageTitle", "Recuperar contraseña");
+		try {	
+			User user = (User) getSingleResultOrNull(entityManager.createNamedQuery("userByEmail")
+					.setParameter("emailParam", Encode.forHtmlContent(email)));
+			
+				if(user == null){
+					model.addAttribute("error", "Alguno de los datos ingresados no coincide.");
+					returnn = "user/olvidopass";
+				} else {
+					if (user.getLogin().equals(Encode.forHtmlContent(alias))
+							&& user.getRespuestaDeSeguridad().equals(Encode.forHtmlContent(respuesta))) {
+						logger.debug("Nueva contraseña asignada.");
+						String random = Encode.forHtmlContent(generarStringPass());
+						model.addAttribute("newPass", random);
+						user.cambiarUserPass(random);
+					} else {
+						model.addAttribute("error", "Alguno de los datos ingresados no coincide.");
+						logger.info(user.getLogin() + "!=" + Encode.forHtmlContent(alias) + "  + " + user.getRespuestaDeSeguridad() + "!= " + Encode.forHtmlContent(respuesta));
+					}
+				}
+		} catch (NullPointerException e) {
+			logger.debug("Algun error:", e);
+			returnn = "redirect:/noregistro/";
+		}
+		return returnn;
+	}
+	
+	public static Object getSingleResultOrNull(Query query){
+		@SuppressWarnings("rawtypes")
+		List results = query.getResultList();
+        if (results.isEmpty()) 
+        	return null;
+        else 
+        	return results.get(0);
+	}
+
+	private String generarStringPass() {
+		SecureRandom random = new SecureRandom();
+		return new BigInteger(130, random).toString(32);
 	}
 
 	/*

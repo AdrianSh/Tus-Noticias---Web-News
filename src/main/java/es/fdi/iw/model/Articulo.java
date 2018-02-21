@@ -13,8 +13,17 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
+
 @Entity
+@NamedQueries({ @NamedQuery(name = "allArticulos", query = "select u from Articulo u"),
+	@NamedQuery(name = "allArticulosOrderByDate", query = "select u from Articulo u order by fecha desc"),
+	@NamedQuery(name = "allArticulosOrderByRanking", query = "select u from Articulo u order by ranking"),
+	@NamedQuery(name = "allArticulosOrderByTipo", query = "select u from Articulo u order by tipo"),
+	@NamedQuery(name = "allArticulosByAutor", query = "select u from Articulo u where u.autor = :autorParam order by fecha desc")
+})
 public class Articulo {
 
 	private long id;
@@ -26,6 +35,38 @@ public class Articulo {
 	private List<Comentario> comentario;
 	private Date fecha;
 	private int ranking;
+	private ArticuloTipo tipo;
+	private String image = "http://lorempixel.com/200/300/";
+	
+	public static Articulo crearArticuloAdministrativo(User autor, List<String> contenido, String titulo, List<Tag> tags){
+		Articulo art = new Articulo();
+		art.autor = autor;
+		art.comentario = new ArrayList<Comentario>();
+		art.contenido = contenido;
+		art.fecha = new Date();
+		art.puntuacionesId = new ArrayList<Integer>();
+		art.ranking = 0;
+		art.tags = tags;
+		art.tipo = ArticuloTipo.ADMIN;
+		art.titulo = titulo;
+		
+		return art;
+	}
+	
+	public static Articulo crearArticuloNormal(User autor, List<String> contenido, String titulo, List<Tag> tags){
+		Articulo art = new Articulo();
+		art.autor = autor;
+		art.comentario = new ArrayList<Comentario>();
+		art.contenido = contenido;
+		art.fecha = new Date();
+		art.puntuacionesId = new ArrayList<Integer>();
+		art.ranking = 0;
+		art.tags = tags;
+		art.tipo = ArticuloTipo.USUARIO;
+		art.titulo = titulo;
+		
+		return art;
+	}
 	
 	@Id
 	@GeneratedValue
@@ -119,5 +160,22 @@ public class Articulo {
 			list.add(builder.toString());
 		}
 		return null;
+	}
+	
+	public void setTipo(ArticuloTipo tipo){
+		this.tipo = tipo;
+	}
+	
+	public void setTipoAdmin(){
+		this.tipo = ArticuloTipo.ADMIN;
+	}
+	public ArticuloTipo getTipo(){
+		return tipo;
+	}
+	public String getImage() {
+		return image;
+	}
+	public void setImage(String image) {
+		this.image = image;
 	}
 }

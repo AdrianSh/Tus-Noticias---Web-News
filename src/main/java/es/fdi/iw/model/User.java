@@ -16,12 +16,17 @@ import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 
+import org.owasp.encoder.Encode;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
+import scala.annotation.meta.getter;
 
 @Entity
 @NamedQueries({ @NamedQuery(name = "allUsers", query = "select u from User u"),
 		@NamedQuery(name = "userByLogin", query = "select u from User u where u.login = :loginParam"),
-		@NamedQuery(name = "delUser", query = "delete from User u where u.id= :idParam") })
+		@NamedQuery(name = "delUser", query = "delete from User u where u.id= :idParam"),
+		@NamedQuery(name = "userByEmail", query = "select u from User u where u.email = :emailParam")
+})
 public class User {
 
 	private static BCryptPasswordEncoder bcryptEncoder = new BCryptPasswordEncoder();
@@ -37,13 +42,18 @@ public class User {
 	private String email;
 	private String avatar = "http://lorempixel.com/100/100/people/10/";
 	private String profileBackground = "http://lorempixel.com/100/100/people/10/";
+	private String preguntaDeSeguridad;
+	private String respuestaDeSeguridad;
 
 	// change fields below here to suit your application
 	private List<Comentario> tablon;
 	private List<Articulo> favoritos;
 	private List<User> seguidores;
 	private List<User> seguidos;
+	private List<Amigos> amigos;
 	private List<Actividad> actividad;
+	private List<Mensajes> mensajes;
+	private List<ComentarioPerfil> comentariosPerfil;
 	private List<Integer> puntuacionesId;
 	private List<Integer> puntuacionesHechasId;
 
@@ -51,25 +61,41 @@ public class User {
 	}
 
 	public static User createUser(String login, String pass, String role, String nombre, String apellido,
-			String email) {
+			String email, String preguntaDeSeguridad, String respuestaDeSeguridad) {
 		User u = new User();
-		u.login = login;
-		u.hashedAndSalted = generateHashedAndSalted(pass);
-		u.role = role;
-		u.name = nombre;
-		u.email = email;
-		u.lname = apellido;
+		u.login = Encode.forHtmlContent(login);
+		u.hashedAndSalted = generateHashedAndSalted(Encode.forHtmlContent(pass));
+		u.role = Encode.forHtmlContent(role);
+		u.name = Encode.forHtmlContent(nombre);
+		u.email = Encode.forHtmlContent(email);
+		u.lname = Encode.forHtmlContent(apellido);
+		u.preguntaDeSeguridad = Encode.forHtmlContent(preguntaDeSeguridad);
+		u.respuestaDeSeguridad = Encode.forHtmlContent(respuestaDeSeguridad);
 		u.tablon = new ArrayList<Comentario>();
 		u.favoritos = new ArrayList<Articulo>();
 		u.seguidores = new ArrayList<User>();
 		u.seguidos = new ArrayList<User>();
+		u.amigos = new ArrayList<Amigos>();
 		u.actividad = new ArrayList<Actividad>();
+		u.mensajes = new ArrayList<Mensajes>();
+		u.comentariosPerfil = new ArrayList<ComentarioPerfil>();
 		u.puntuacionesHechasId = new ArrayList<Integer>();
 		u.puntuacionesId = new ArrayList<Integer>();
 		return u;
 	}
-
+	public void cambiarUserPass(String pass){
+		hashedAndSalted = generateHashedAndSalted(pass);
+	}
+	/*
+	public static void main(String[] args) {
+		System.err.println(generateHashedAndSalted("lolo"));
+	}
+	*/
 	public boolean isPassValid(String pass) {
+		return bcryptEncoder.matches(pass, hashedAndSalted);
+	}
+	
+	public static boolean isHashValid(String pass, String hashedAndSalted) {
 		return bcryptEncoder.matches(pass, hashedAndSalted);
 	}
 
@@ -248,6 +274,15 @@ public class User {
 	}
 
 	@OneToMany(fetch = FetchType.EAGER, mappedBy = "user", cascade = CascadeType.ALL)
+	public List<Amigos> getAmigos() {
+		return amigos;
+	}
+
+	public void setAmigos(List<Amigos> amigos) {
+		this.amigos = amigos;
+	}
+	
+	@OneToMany(fetch = FetchType.EAGER, mappedBy = "user", cascade = CascadeType.ALL)
 	public List<Actividad> getActividad() {
 		return actividad;
 	}
@@ -255,7 +290,26 @@ public class User {
 	public void setActividad(List<Actividad> actividad) {
 		this.actividad = actividad;
 	}
+	
 
+	@OneToMany(fetch = FetchType.EAGER, mappedBy = "user", cascade = CascadeType.ALL)
+	public List<Mensajes> getMensajes() {
+		return mensajes;
+	}
+
+	public void setMensajes(List<Mensajes> mensajes) {
+		this.mensajes = mensajes;
+	}
+	
+	@OneToMany(fetch = FetchType.EAGER, mappedBy = "user", cascade = CascadeType.ALL)
+	public List<ComentarioPerfil> getComentariosPerfil() {
+		return comentariosPerfil;
+	}
+
+	public void setComentariosPerfil(List<ComentarioPerfil> comentariosPerfil) {
+		this.comentariosPerfil = comentariosPerfil;
+	}
+	
 	@ElementCollection
 	public List<Integer> getPuntuacionesId() {
 		// aqui consulta para encontrar puntuacion
@@ -315,5 +369,20 @@ public class User {
 	public void setProfileBackground(String profileBackground) {
 		this.profileBackground = profileBackground;
 	}
-
+	
+	public String getPreguntaDeSeguridad(){
+		return preguntaDeSeguridad;
+	}
+	
+	public void setPreguntaDeSeguridad(String preguntaDeSeguridad){
+		this.preguntaDeSeguridad = preguntaDeSeguridad; 
+	}
+	
+	public String getRespuestaDeSeguridad(){
+		return respuestaDeSeguridad;
+	}
+	
+	public void setRespuestaDeSeguridad(String respuestaDeSeguridad){
+		this.respuestaDeSeguridad = respuestaDeSeguridad; 
+	}
 }

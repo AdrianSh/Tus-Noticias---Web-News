@@ -32,17 +32,16 @@ try {
 	function updateSeleccion() {
 		$(".seleccion").html = '';
 		$.each(selecciones, function(key, value) {
-			if (this['seleccion'] != '')
-				$(".seleccion").append('"...' + this['seleccion'] + '..."' /*
-																			 * <span
-																			 * class="deleteSeleccion"
-																			 * onclick="deleteSeleccion(' +
-																			 * "'" +
-																			 * btoa(this['seleccion']) +
-																			 * "'" +
-																			 * ')">x</span>,
-																			 */);
+			if (this['seleccion'] != '') {
+				var temporal = $(".seleccion").val(); // Obtener el valor
+				// actual
+				$(".seleccion").val(
+						temporal + '"...' + this['seleccion'] + '..."');
+				$(".wysibb-text-editor").focus();
+				$("#articuloContenedor").focus();
+			}
 		});
+		selecciones = [];
 		changeseleccionActiva();
 	}
 	function deleteSeleccion(valuestring) {
@@ -61,7 +60,9 @@ try {
 		});
 		return encontrado;
 	}
+	
 	function changeseleccionActiva() {
+		
 		if (seleccionActiva)
 			seleccionActiva = false;
 		else
@@ -74,19 +75,6 @@ try {
 /*
  * Basico
  */
-$('#pagination-demo').twbsPagination({
-	totalPages : 35,
-	visiblePages : 7,
-	onPageClick : function(event, page) {
-		// $('.articulo').text('Page ' + page);
-		$('.articulo').text($('.articulo').html);
-	}
-});
-$(".category").click(function() {
-	$("article.articulo").text("Cambiar con json ajax");
-	$("a.list-group-item.category.active").toggleClass("active");
-	$(this).toggleClass("active");
-});
 
 $(document).ready(function() {
 	$(".btn-pref .btn").click(function() {
@@ -169,21 +157,108 @@ $(function() {
 
 $("input.label_better").label_better({
 	position : "top", // This will let you define the position where the label
-						// will appear when the user clicked on the input
-						// fields. Acceptable options are "top", "bottom",
-						// "left" and "right". Default value is "top".
+	// will appear when the user clicked on the input
+	// fields. Acceptable options are "top", "bottom",
+	// "left" and "right". Default value is "top".
 	animationTime : 250, // This will let you control the animation speed
-							// when the label appear. This option accepts value
-							// in milliseconds. The default value is 500.
+	// when the label appear. This option accepts value
+	// in milliseconds. The default value is 500.
 	easing : "ease-in-out", // This option will let you define the CSS easing
-							// you would like to see animating the label. The
-							// option accepts all default CSS easing such as
-							// "linear", "ease" etc. Another extra option is you
-							// can use is "bounce". The default value is
-							// "ease-in-out".
+	// you would like to see animating the label. The
+	// option accepts all default CSS easing such as
+	// "linear", "ease" etc. Another extra option is you
+	// can use is "bounce". The default value is
+	// "ease-in-out".
 	offset : 0, // You can add more spacing between the input and the label.
-				// This option accepts value in pixels (without the unit). The
-				// default value is 20.
+	// This option accepts value in pixels (without the unit). The
+	// default value is 20.
 	hidePlaceholderOnFocus : true
 // The default placeholder text will hide on focus
 });
+
+function choose(e) {
+	$("#table1").hide();
+	$("#selection1").show();
+	$("#selection1 .panel-body").html($(e).find("p"));
+}
+
+function showFormAddTag(e, id) {
+	e
+			.parent()
+			.html(
+					e.parent().html()
+							+ "<form method='post' action='./../articulo/anadirTag'><input type='text' name='Tag' class='btn-sm' placeholder='Tag'><input type='hidden' name='idArticulo' value='"
+							+ id
+							+ "'><input type='submit' value='Añadir Tag'><input type='submit' value='Cancelar' class='btn-sm' onclick='$(this).hide()'></form>");
+}
+function showFormDeleteTag(e, id) {
+	e
+			.parent()
+			.html(
+					e.parent().html()
+							+ "<form method='post' action='./../articulo/eliminarTag'><input type='text' name='Tag' class='btn-sm' placeholder='Tag'><input type='hidden' name='idArticulo' value='"
+							+ id
+							+ "'><input type='submit' value='Eliminar Tag'><input type='submit' value='Cancelar' class='btn-sm' onclick='$(this).hide()'></form>");
+}
+
+
+/*
+ * BBcode decode :B 
+ */
+$.each(
+				$("section"),
+				function(key, value) {
+					$str = $(this).html();
+
+					$format_search = [ /\[b\](.*?)\[\/b\]/ig,
+							/\[i\](.*?)\[\/i\]/ig,
+							/\[u\](.*?)\[\/u\]/ig,
+							/\[s\](.*?)\[\/s\]/ig,
+							/\[center\](.*?)\[\/center\]/ig,
+							/\[sup\](.*?)\[\/sup\]/ig,
+							/\[sub\](.*?)\[\/sub\]/ig,
+							/\[list\](.*?)\[\/list\]/ig,
+							/\[*\](.*?)\[\/*\]/ig,
+							/\[list=1\](.*?)\[\/list\]/ig,
+							/\[img\](.*?)\[\/img\]/ig,
+							/\[video\](.*?)\[\/video\]/ig,,
+							/\[url=(.*?)](.*?)\[\/url\]/ig,
+							/\[color=(.*?)\](.*?)\[\/color\]/ig,
+							/\[size=(.*?)\](.*?)\[\/size\]/ig,
+							/\[left\](.*?)\[\/left\]/ig,
+							/\[right\](.*?)\[\/right\]/ig,
+							/\[quote\](.*?)\[\/quote\]/ig,
+							/\[table\](.*?)\[\/table\]/ig,
+							/\[tr\](.*?)\[\/tr\]/ig,
+							/\[td\](.*?)\[\/td\]/ig,
+							/\[thead\](.*?)\[\/thead\]/ig];
+							
+					$format_replace = [ '<strong>$1</strong>', 
+					        '<em>$1</em>',
+							'<span style="text-decoration: underline;">$1</span>',
+							'<strike>$1</strike>',
+							'<p style="text-align:center">$1</p>',
+							'<sup>$1</sup>',
+							'<sub>$1</sub>',
+							'<ul>$1</ul>',
+							'<li>$1</li>',
+							'<ol>$1</ol>',
+							'<img src="$1">',
+							'<iframe src="http://www.youtube.com/embed/$1" width="640" height="480" frameborder="0"></iframe>',
+							'<a href="$1">$2</a>',
+							'<font color="$1">$2</font>',
+							'<font size="$1">$2</font>',
+							'<p style="text-align:left">$1</p>',
+							'<p style="text-align:right">$1</p>',
+							'<blockquote>$1</blockquote>',
+							'<table>$1</table>',
+							'<tr>$1</tr>',
+							'<td>$1</td>',
+							'<thead>$1</thead>'];
+
+					for (var i = 0; i < $format_search.length; i++) {
+						$str = $str.replace($format_search[i],
+								$format_replace[i]);
+					}
+					$(this).html($str);
+				});

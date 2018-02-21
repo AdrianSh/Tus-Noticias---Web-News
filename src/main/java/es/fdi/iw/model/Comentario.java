@@ -1,5 +1,6 @@
 package es.fdi.iw.model;
 
+import java.util.Date;
 import java.util.List;
 
 import javax.persistence.ElementCollection;
@@ -9,10 +10,14 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 
 @Entity
+@NamedQueries({ @NamedQuery(name = "allComentarios", query = "select u from Comentario u"),
+	 @NamedQuery(name = "allComentariosByArticulo", query = "select u from Comentario u where u.articulo = :articuloParam")})
 public class Comentario {
 	private long id;
 	private String comment; 
@@ -21,6 +26,7 @@ public class Comentario {
 	private Comentario responde;
 	private List<Integer> puntuacionesId;
 	private List<Comentario> respuestas;
+	private Date fecha;
 
 	@Id
 	@GeneratedValue
@@ -57,6 +63,14 @@ public class Comentario {
 	public void setArticulo(Articulo articulo) {
 		this.articulo = articulo;
 	}
+	
+	public int PuntuacionReal(){
+		int i = 0;
+		for(int l: puntuacionesId)
+			i += l;
+		return i;
+	}
+	
 	@ElementCollection
 	public List<Integer> getPuntuacionesId() {
 		//aqui consulta para encontrar puntuacion
@@ -86,5 +100,13 @@ public class Comentario {
 
 	public void setResponde(Comentario responde) {
 		this.responde = responde;
+	}
+
+	public Date getFecha() {
+		return fecha;
+	}
+
+	public void setFecha(Date fecha) {
+		this.fecha = fecha;
 	}
 }

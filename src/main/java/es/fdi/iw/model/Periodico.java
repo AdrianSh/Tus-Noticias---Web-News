@@ -12,9 +12,7 @@ public class Periodico {
 
 	private long id;
 	private String url;
-	private String identificador;
-	private String identiValor;
-	private String contenidoHTML = null;
+	private String nombre;
 
 	@Id
 	@GeneratedValue
@@ -26,14 +24,6 @@ public class Periodico {
 		this.id = id;
 	}
 
-	public void setContenidoHTML(String contenido) {
-		contenidoHTML = contenido;
-	}
-
-	public String getContenidoHTML() {
-		return contenidoHTML;
-	}
-
 	public String getUrl() {
 		return url;
 	}
@@ -42,19 +32,10 @@ public class Periodico {
 		this.url = url;
 	}
 
-	public String getIdentificador() {
-		return identificador;
+	public void setNombre(String nombre){
+	  	this.nombre = nombre;
 	}
-
-	public void setIdentificador(String identificador) {
-		this.identificador = identificador;
-	}
-
-	public String getIdentiValor() {
-		return identiValor;
-	}
-
-	public void setIdentiValor(String identiValor) {
-		this.identiValor = identiValor;
+	public String getNombre(){
+	  	return nombre;
 	}
 }

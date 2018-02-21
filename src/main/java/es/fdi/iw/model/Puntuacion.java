@@ -5,13 +5,18 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 
+import org.hibernate.annotations.NamedQueries;
+import org.hibernate.annotations.NamedQuery;
 
+@NamedQueries({ @NamedQuery(name = "puntuacionById", query = "select u from Puntuacion u where u.id= :idParam")})
 @Entity
 public class Puntuacion {
 	private long id;
 	private int positivos;
 	private int negativos;
 	private long usuarioId;
+	
+	public Puntuacion(){};
 	
 	public Puntuacion(int pos, int neg){	
 		this.positivos = pos;
@@ -51,7 +56,7 @@ public class Puntuacion {
 		this.negativos++;
 	}
 	
-	@ManyToOne(targetEntity=User.class)
+	//@ManyToOne(targetEntity=User.class)
 	public long getUsuario() {
 		return usuarioId;
 	}
